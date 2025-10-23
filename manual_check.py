@@ -228,9 +228,20 @@ def process_manual_check(bot, message, allowed_users):
         # ============================================================
         # 🧠 Interpret decline / response reasons for readable message
         # ============================================================
-        if any(word in raw_reason for word in ["requires_action", "3d", "3ds", "authentication"]):
+        # Normalize Stripe prefixes like "stripe: your card is incorrect"
+        raw_reason = re.sub(r"(?i)^stripe:\s*", "", raw_reason).strip()
+
+        if any(word in raw_reason for word in ["requires_action", "3d", "3ds", "authentication_required", "authentication"]):
             final_message_detail = "3D Secure authentication required."
             final_status = "3DS_REQUIRED"
+
+        elif any(word in raw_reason for word in [
+            "incorrect_number", "card number is incorrect", "your card number is incorrect",
+            "your card is incorrect", "invalid number"
+        ]):
+            final_message_detail = "Your card number is incorrect."
+            final_status = "DECLINED"
+
         elif any(word in raw_reason for word in [
             "security", "cvc", "cvv", "invalid cvc", "invalid cvv",
             "wrong cvc", "wrong cvv", "incorrect cvc", "incorrect cvv",
@@ -245,29 +256,31 @@ def process_manual_check(bot, message, allowed_users):
             "declined insufficient", "insufficient_funds"
         ]):
             final_message_detail = "Insufficient funds."
-
-        elif any(word in raw_reason for word in [
-            "security", "cvc", "cvv", "invalid cvc", "invalid cvv",
-            "wrong cvc", "wrong cvv", "incorrect cvc", "incorrect cvv",
-            "security code", "invalid security", "check code"
-        ]):
-            final_message_detail = "Your card security is incorrect."
+            final_status = "INSUFFICIENT_FUNDS"
 
         elif any(word in raw_reason for word in [
             "expired", "expiry", "expiration", "invalid expiry",
             "invalid exp date", "card expired", "expired_card"
         ]):
             final_message_detail = "Expired card."
+            final_status = "DECLINED"
 
         elif "pickup" in raw_reason or "stolen" in raw_reason:
             final_message_detail = "Stolen or blocked card."
-        elif "support" in raw_reason or "does not support" in raw_reason or "unsupported" in raw_reason:
+            final_status = "DECLINED"
+
+        elif any(word in raw_reason for word in ["support", "does not support", "unsupported"]):
             final_message_detail = "Your card does not support this type of purchase."
             final_status = "CVV"
+
         elif "site" in raw_reason:
             final_message_detail = "Site response failed."
+            final_status = "DECLINED"
+
         elif "stripe" in raw_reason and not "error" in raw_reason:
             final_message_detail = "Stripe error occurred."
+            final_status = "DECLINED"
+
         else:
             final_message_detail = (
                 result.get("reason")
@@ -276,17 +289,18 @@ def process_manual_check(bot, message, allowed_users):
                 or "Your card was declined."
             )
 
-            # 🧹 Clean duplicate decline phrases like "Card declined (your card was declined)"
-            final_message_detail = re.sub(
-                r"\bcard declined\s*\(.*your card was declined.*\)", 
-                "Your card was declined", 
-                final_message_detail, 
-                flags=re.I
-            ).strip()
+        # 🧹 Clean duplicate decline phrases like "Card declined (your card was declined)"
+        final_message_detail = re.sub(
+            r"\bcard declined\s*\(.*your card was declined.*\)",
+            "Your card was declined",
+            final_message_detail,
+            flags=re.I
+        ).strip()
 
-            # 🔎 Also simplify any redundant nested parentheses or doubled messages
-            if "your card was declined" in final_message_detail.lower() and "(" in final_message_detail:
-                final_message_detail = "Your card was declined."
+        # 🔎 Simplify any redundant parentheses or duplicated messages
+        if "your card was declined" in final_message_detail.lower() and "(" in final_message_detail:
+            final_message_detail = "Your card was declined."
+ 
 
 
 
