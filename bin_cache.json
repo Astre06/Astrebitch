@@ -1,0 +1,29 @@
+{
+  "559888": {
+    "scheme": "MASTERCARD",
+    "type": "DEBIT",
+    "brand": "DEBIT MASTERCARD UNEMBOSSED",
+    "bank": "Bangkok Bank Public Company Limited",
+    "country": "Thailand",
+    "bin": "559888",
+    "display_clean": "DEBIT MASTERCARD UNEMBOSSED - DEBIT - MASTERCARD"
+  },
+  "537389": {
+    "scheme": "MASTERCARD",
+    "type": "DEBIT",
+    "brand": "DEBIT STANDARD",
+    "bank": "Wirex Limited",
+    "country": "Spain",
+    "bin": "537389",
+    "display_clean": "DEBIT STANDARD - DEBIT - MASTERCARD"
+  },
+  "480209": {
+    "scheme": "VISA",
+    "type": "DEBIT",
+    "brand": "VISA BUSINESS",
+    "bank": "U.S. Bank National Association",
+    "country": "United States of America",
+    "bin": "480209",
+    "display_clean": "VISA BUSINESS - DEBIT - VISA"
+  }
+}
