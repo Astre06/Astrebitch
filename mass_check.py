@@ -625,6 +625,17 @@ def handle_file(bot, message, allowed_users=None):
                                 message_text = "Declined (Stripe Token Error)"
                             elif "site" in reason_lower:
                                 message_text = "Declined (Site Response Failed)"
+                        # 🧹 Clean duplicate decline phrases like "Card declined (your card was declined)"
+                        message_text = re.sub(
+                            r"\bcard declined\s*\(.*your card was declined.*\)",
+                            "Your card was declined",
+                            message_text,
+                            flags=re.I
+                        ).strip()
+
+                        # 🔎 Simplify redundant nested parentheses or doubled messages
+                        if "your card was declined" in message_text.lower() and "(" in message_text:
+                            message_text = "Your card was declined."
 
                         # -----------------------------------------
                         # 💳 CLASSIFY RESULT TYPE
