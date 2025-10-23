@@ -356,15 +356,21 @@ def process_manual_check(bot, message, allowed_users):
         # ============================================================
         # 🧩 Update top_status and emoji based on final_status
         # ============================================================
-        if final_status in ["APPROVED", "LIVE", "CARD ADDED", "PAYMENT_ADDED"]:
+        # ============================================================
+        # 🧩 Update top_status and emoji based on final_status/message
+        # ============================================================
+        msg_lower = final_message_detail.lower()
+
+        if any(x in msg_lower for x in ["auth success", "card added", "approved", "payment added"]):
             top_status = "Approved ✅"
+            final_status = "APPROVED"
             emoji = "✅"
-        elif final_status in ["CVV"]:
-            top_status = "CVV ⚠️"
-            emoji = "⚠️"
         elif final_status in ["CCN"]:
             top_status = "CCN 🔥"
             emoji = "🔥"
+        elif final_status in ["CVV"]:
+            top_status = "CVV ⚠️"
+            emoji = "⚠️"
         elif final_status in ["INSUFFICIENT_FUNDS"]:
             top_status = "Insufficient Funds 💵"
             emoji = "💵"
@@ -374,6 +380,7 @@ def process_manual_check(bot, message, allowed_users):
         else:
             top_status = "Declined ❌"
             emoji = "❌"
+
 
         safe_raw_card = escape(raw_card_for_bin)
         final_msg = (
