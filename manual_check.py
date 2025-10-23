@@ -276,6 +276,19 @@ def process_manual_check(bot, message, allowed_users):
                 or "Your card was declined."
             )
 
+            # 🧹 Clean duplicate decline phrases like "Card declined (your card was declined)"
+            final_message_detail = re.sub(
+                r"\bcard declined\s*\(.*your card was declined.*\)", 
+                "Your card was declined", 
+                final_message_detail, 
+                flags=re.I
+            ).strip()
+
+            # 🔎 Also simplify any redundant nested parentheses or doubled messages
+            if "your card was declined" in final_message_detail.lower() and "(" in final_message_detail:
+                final_message_detail = "Your card was declined."
+
+
 
 
         if final_status == "CARD ADDED":
